@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FONT, useTheme } from '../lib/theme';
 import { dayLabel, formatTime } from '../lib/format';
 
@@ -49,7 +49,6 @@ export function TimeColumns({
   accessibilityLabel,
 }: Props) {
   const theme = useTheme();
-  const [width, setWidth] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
 
   const max = useMemo(() => {
@@ -58,10 +57,10 @@ export function TimeColumns({
   }, [columns]);
 
   const ticks = [0, max / 2, max];
-  const plotW = Math.max(0, width - Y_AXIS_W);
-  const slot = columns.length > 0 ? plotW / columns.length : 0;
-  const barW = Math.max(1, Math.min(MAX_BAR, slot - GAP));
-  const radius = Math.min(4, barW / 2);
+  // Pure flex/percentage layout: no dependency on onLayout, so the chart is
+  // correct on the very first render on every platform.
+  const pct = (i: number) => `${(i / Math.max(1, columns.length)) * 100}%` as const;
+  const radius = columns.length > 30 ? 2 : 4;
   const activeIndex = selected ?? defaultIndex ?? columns.length - 1;
   const active = columns[activeIndex];
 
@@ -71,8 +70,8 @@ export function TimeColumns({
     const step = Date.parse(columns[1]!.t) - first;
     const pos = (nowMs - first) / step;
     if (pos < 0 || pos > columns.length) return null;
-    return Y_AXIS_W + pos * slot;
-  }, [nowMs, columns, slot]);
+    return pos;
+  }, [nowMs, columns]);
 
   // Label every 6th hour on the x axis (local time).
   const xLabels = columns
@@ -86,20 +85,20 @@ export function TimeColumns({
           ? `${dayLabel(active.t, timeZone)} ${formatTime(active.t, timeZone)} · ${describe(active)}`
           : ' '}
       </Text>
-      <View onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)} style={{ height }}>
+      <View style={{ height }}>
         {ticks.map((v) => (
           <View key={v} style={[styles.gridRow, { bottom: (v / (max || 1)) * height }]} pointerEvents="none">
             <Text style={[styles.tick, { color: theme.textMuted }]}>{formatTick(v)}</Text>
             <View style={[styles.gridLine, { backgroundColor: v === 0 ? theme.axis : theme.grid }]} />
           </View>
         ))}
-        {nowX != null && (
-          <View
-            pointerEvents="none"
-            style={[styles.nowLine, { left: nowX, height, backgroundColor: theme.textMuted }]}
-          />
-        )}
         <View style={[styles.plot, { left: Y_AXIS_W }]}>
+          {nowX != null && (
+            <View
+              pointerEvents="none"
+              style={[styles.nowLine, { left: pct(nowX), height, backgroundColor: theme.textMuted }]}
+            />
+          )}
           {columns.map((c, i) => {
             const isActive = i === activeIndex;
             const visible = c.segments.filter((s) => s.value > 0);
@@ -108,11 +107,11 @@ export function TimeColumns({
                 key={c.t}
                 onPressIn={() => setSelected(i)}
                 onHoverIn={() => setSelected(i)}
-                style={[styles.slot, { width: slot }]}
+                style={styles.slot}
                 accessibilityRole="button"
                 accessibilityLabel={`${formatTime(c.t, timeZone)}: ${describe(c)}`}
               >
-                <View style={{ width: barW, opacity: selected == null || isActive ? 1 : 0.55 }}>
+                <View style={[styles.bar, { opacity: selected == null || isActive ? 1 : 0.55 }]}>
                   {[...visible].reverse().map((s, k) => {
                     const h = (s.value / (max || 1)) * height;
                     const isTop = k === 0;
@@ -139,7 +138,7 @@ export function TimeColumns({
         {xLabels.map(({ i, label }) => (
           <Text
             key={columns[i]!.t}
-            style={[styles.tick, styles.xTick, { color: theme.textMuted, left: i * slot }]}
+            style={[styles.tick, styles.xTick, { color: theme.textMuted, left: pct(i) }]}
           >
             {label.slice(0, 2)}
           </Text>
@@ -164,7 +163,14 @@ const styles = StyleSheet.create({
   gridLine: { flex: 1, height: StyleSheet.hairlineWidth },
   nowLine: { position: 'absolute', top: 0, width: 1 },
   plot: { position: 'absolute', top: 0, bottom: 0, right: 0, flexDirection: 'row', alignItems: 'flex-end' },
-  slot: { height: '100%', alignItems: 'center', justifyContent: 'flex-end' },
+  slot: {
+    flex: 1,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: GAP / 2,
+  },
+  bar: { width: '100%', maxWidth: MAX_BAR },
   xAxis: { height: 16, marginTop: 4 },
   xTick: { position: 'absolute', width: 24 },
 });
