@@ -29,6 +29,8 @@ const light = {
     other: '#ee7fac',
   } satisfies Record<FuelCategory, string>,
   status: { good: '#0aac23', warning: '#fbb315', serious: '#f18a59', critical: '#dc3c3d' },
+  /** Sequential blue ramp, low → high magnitude (calendar heatmap). */
+  seq: ['#cce3fd', '#9dc8f7', '#6aabf1', '#338ced', '#2370cd', '#1757ac', '#0e3d7e'],
 };
 
 const dark: typeof light = {
@@ -54,6 +56,8 @@ const dark: typeof light = {
     other: '#e24d8b',
   },
   status: light.status,
+  // On a dark surface low values recede into the dark, high values get brighter.
+  seq: ['#0e3d7e', '#1757ac', '#2370cd', '#338ced', '#6aabf1', '#9dc8f7', '#cce3fd'],
 };
 
 export type Theme = typeof light;
@@ -69,3 +73,14 @@ export const FONT = {
   small: 13,
   tiny: 11,
 };
+
+/** Near-black or white text, whichever reads better on the given fill. */
+export function textOn(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+    const x = c / 255;
+    return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 0.35 ? '#0b0b0b' : '#ffffff';
+}
