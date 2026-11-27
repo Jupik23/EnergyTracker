@@ -23,7 +23,7 @@
     "history": "npm run history --workspace @energy/pipeline --"
   },
   "devDependencies": {
-    "@types/node": "^22.20.7",
+    "@types/node": "^26.6.7",
     "prettier": "^3.10.1",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
