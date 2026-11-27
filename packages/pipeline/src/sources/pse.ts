@@ -63,3 +63,32 @@ export async function fetchRce(dates: string[]): Promise<Point[]> {
   }
   return parseRce(rows);
 }
+
+/**
+ * RCE for a whole date range (local business dates, inclusive), fetched a
+ * month per request — the API returns a month of 15-minute rows in one page.
+ */
+export async function fetchRceRange(
+  start: string,
+  end: string,
+  get: <T>(url: string) => Promise<T> = fetchJson,
+): Promise<Point[]> {
+  const rows: RceRow[] = [];
+  let cur = new Date(`${start}T00:00:00Z`);
+  const last = new Date(`${end}T00:00:00Z`);
+  while (cur <= last) {
+    const monthEnd = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth() + 1, 0));
+    const to = monthEnd < last ? monthEnd : last;
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    const filter = `business_date ge '${iso(cur)}' and business_date le '${iso(to)}'`;
+    let url: string | undefined =
+      `${BASE}/rce-pln?$select=rce_pln,dtime_utc,period_utc&$filter=${encodeURIComponent(filter)}&$first=5000`;
+    for (let page = 0; url && page < 10; page++) {
+      const res: PseResponse<RceRow> = await get<PseResponse<RceRow>>(url);
+      rows.push(...res.value);
+      url = res.nextLink;
+    }
+    cur = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth() + 1, 1));
+  }
+  return parseRce(rows);
+}

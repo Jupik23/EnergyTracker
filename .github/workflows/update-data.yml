@@ -50,6 +50,34 @@ jobs:
           npx --yes tsx@4.23.15 --tsconfig packages/pipeline/tsconfig.json \
             packages/pipeline/src/run.ts "${args[@]}"
 
+      # Extras built on top of the fresh snapshots. Failures here must never
+      # block publishing the data itself, hence continue-on-error.
+      #
+      # The weekly "Train forecast" workflow publishes models and the one-year
+      # price history to the separate `models` branch (so it never races this
+      # job's force-push); copy them in so they are served from `data` too.
+      - name: Copy forecast models
+        continue-on-error: true
+        run: |
+          if git clone --quiet --depth 1 --branch models --single-branch \
+               "https://github.com/${GITHUB_REPOSITORY}.git" models-in; then
+            cp -r models-in/v1/. data-out/v1/
+          else
+            echo "No models branch yet — run the Train forecast workflow."
+          fi
+
+      - name: 7-day forecast (refreshes every 3 h)
+        continue-on-error: true
+        run: |
+          npx --yes tsx@4.23.15 --tsconfig packages/pipeline/tsconfig.json \
+            packages/pipeline/src/forecast/run.ts --out data-out
+
+      - name: Smart-home feed
+        continue-on-error: true
+        run: |
+          npx --yes tsx@4.23.15 --tsconfig packages/pipeline/tsconfig.json \
+            packages/pipeline/src/feed/run.ts --out data-out
+
       # The data branch is a single orphan commit, force-pushed each run, so
       # 96 updates a day never bloat the repository history.
       - name: Publish to data branch

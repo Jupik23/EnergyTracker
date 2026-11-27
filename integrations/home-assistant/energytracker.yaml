@@ -1,0 +1,88 @@
+# EnergyTracker — pakiet dla Home Assistant.
+#
+# Daje encje z bieżącą ceną hurtową, emisyjnością CO₂, poziomem ceny i najtańszymi
+# oknami na najbliższą dobę — do automatyzacji typu „włącz bojler w najtańszych
+# 3 godzinach” albo „ładuj auto, gdy prąd jest najczystszy”.
+#
+# Instalacja:
+#  1. W configuration.yaml włącz pakiety:
+#       homeassistant:
+#         packages: !include_dir_named packages
+#  2. Zapisz ten plik jako config/packages/energytracker.yaml.
+#  3. Jeśli nie jesteś w Polsce, zmień „/pl/” w adresie na swoją strefę (de, fr, cz…).
+#  4. Uruchom ponownie Home Assistant.
+#
+# Dane: https://github.com/Jupik23/EnergyTracker (Energy-Charts CC BY 4.0, PSE).
+# Ceny są hurtowe (RCE / rynek dnia następnego), bez dystrybucji, marży i VAT.
+
+rest:
+  - resource: https://raw.githubusercontent.com/Jupik23/EnergyTracker/data/v1/pl/feed.json
+    scan_interval: 900
+    sensor:
+      - name: EnergyTracker cena
+        unique_id: energytracker_price
+        value_template: '{{ value_json.now.price }}'
+        # Waluta strefy: PLN dla Polski, EUR dla pozostałych — zmień, jeśli używasz innej strefy.
+        unit_of_measurement: 'PLN/kWh'
+        icon: mdi:cash
+        json_attributes_path: '$'
+        json_attributes:
+          - prices
+          - cheapest
+          - cleanest
+          - now
+      - name: EnergyTracker emisyjność
+        unique_id: energytracker_co2
+        value_template: '{{ value_json.now.co2 }}'
+        unit_of_measurement: 'g/kWh'
+        icon: mdi:molecule-co2
+        json_attributes_path: '$'
+        json_attributes:
+          - co2
+      - name: EnergyTracker udział OZE
+        unique_id: energytracker_renewables
+        value_template: '{{ value_json.now.renewableShare }}'
+        unit_of_measurement: '%'
+        icon: mdi:leaf
+      - name: EnergyTracker poziom ceny
+        unique_id: energytracker_price_level
+        # very_low / low / normal / high / very_high — względem znanych godzin dziś i jutro
+        value_template: '{{ value_json.now.priceLevel }}'
+        icon: mdi:cash-clock
+      - name: EnergyTracker najtańsze 3 h — start
+        unique_id: energytracker_cheapest3_start
+        device_class: timestamp
+        value_template: '{{ value_json.cheapest["3"].start if value_json.cheapest["3"] else none }}'
+      - name: EnergyTracker najczystsze 3 h — start
+        unique_id: energytracker_cleanest3_start
+        device_class: timestamp
+        value_template: '{{ value_json.cleanest["3"].start if value_json.cleanest["3"] else none }}'
+
+template:
+  - binary_sensor:
+      - name: EnergyTracker tania godzina
+        unique_id: energytracker_cheap_now
+        # Włączony, gdy bieżąca godzina należy do 25% najtańszych znanych godzin.
+        state: >
+          {% set n = state_attr('sensor.energytracker_cena', 'now') %}
+          {{ n is not none and n.priceRank is not none and n.priceRank <= 0.25 }}
+        icon: mdi:piggy-bank
+      - name: EnergyTracker w najtańszym oknie 3 h
+        unique_id: energytracker_in_cheapest3
+        state: >
+          {% set w = (state_attr('sensor.energytracker_cena', 'cheapest') or {}).get('3') %}
+          {{ w is not none and as_datetime(w.start) <= now() < as_datetime(w.end) }}
+        icon: mdi:timer-outline
+
+# Przykładowa automatyzacja — odkomentuj i podmień encję bojlera:
+#
+# automation:
+#   - alias: Bojler w najtańszych godzinach
+#     trigger:
+#       - platform: state
+#         entity_id: binary_sensor.energytracker_w_najtanszym_oknie_3_h
+#     action:
+#       - service: >
+#           switch.turn_{{ 'on' if trigger.to_state.state == 'on' else 'off' }}
+#         target:
+#           entity_id: switch.bojler

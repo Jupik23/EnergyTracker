@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 import { FUELS, FUEL_LABELS_PL } from '@energy/core';
 import { Screen } from '../components/Screen';
@@ -18,6 +19,16 @@ const SOURCES = [
     what: 'Rynkowa Cena Energii (RCE) dla Polski w zł/MWh.',
   },
   {
+    name: 'Open-Meteo',
+    url: 'https://open-meteo.com',
+    what: 'Prognozy pogody (wiatr, słońce, temperatura) dla prognozy cen i emisyjności na 7 dni. Licencja CC BY 4.0.',
+  },
+  {
+    name: 'NBP — kursy walut',
+    url: 'https://api.nbp.pl',
+    what: 'Kurs EUR/PLN do przeliczenia prognozy cen na złote.',
+  },
+  {
     name: 'ENTSO-E Transparency Platform',
     url: 'https://transparency.entsoe.eu',
     what: 'Pierwotne źródło danych dla większości krajów UE (przez Energy-Charts).',
@@ -29,6 +40,15 @@ export default function About() {
   const { snapshot } = useData();
   return (
     <Screen title="Źródła i metoda" showZonePicker={false}>
+      <Card title="🏠 Inteligentny dom" subtitle="Home Assistant, Shelly i własne integracje">
+        <Muted>
+          Niech bojler, grzejnik czy ładowarka same włączają się, gdy prąd jest najtańszy lub najczystszy.
+        </Muted>
+        <Link href="/integrations" style={[styles.link, { color: t.accent }]}>
+          Jak podłączyć →
+        </Link>
+      </Card>
+
       <Card title="Skąd są dane">
         {SOURCES.map((s) => (
           <View key={s.url} style={{ gap: 2, paddingVertical: 4 }}>
