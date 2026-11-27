@@ -1,0 +1,170 @@
+import { useMemo, useState } from 'react';
+import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import { FONT, useTheme } from '../lib/theme';
+import { dayLabel, formatTime } from '../lib/format';
+
+export interface Segment {
+  key: string;
+  value: number;
+  color: string;
+}
+
+export interface Column {
+  t: string;
+  segments: Segment[];
+}
+
+interface Props {
+  columns: Column[];
+  timeZone: string;
+  height?: number;
+  /** Text for the readout line of a selected column. */
+  describe: (c: Column) => string;
+  /** Formats y-axis tick values. */
+  formatTick: (v: number) => string;
+  /** Index shown in the readout before the user touches the chart. */
+  defaultIndex?: number;
+  nowMs?: number;
+  accessibilityLabel: string;
+}
+
+const GAP = 2;
+const MAX_BAR = 24;
+const Y_AXIS_W = 40;
+
+/**
+ * Column chart over time, built from plain Views so it renders identically on
+ * iOS, Android and web without a native charting dependency. Supports stacked
+ * segments; a single-series chart is just one segment per column.
+ * Touch (or hover on web) a column to read its exact value.
+ */
+export function TimeColumns({
+  columns,
+  timeZone,
+  height = 160,
+  describe,
+  formatTick,
+  defaultIndex,
+  nowMs,
+  accessibilityLabel,
+}: Props) {
+  const theme = useTheme();
+  const [width, setWidth] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+
+  const max = useMemo(() => {
+    const m = Math.max(0, ...columns.map((c) => c.segments.reduce((a, s) => a + Math.max(0, s.value), 0)));
+    return niceCeil(m);
+  }, [columns]);
+
+  const ticks = [0, max / 2, max];
+  const plotW = Math.max(0, width - Y_AXIS_W);
+  const slot = columns.length > 0 ? plotW / columns.length : 0;
+  const barW = Math.max(1, Math.min(MAX_BAR, slot - GAP));
+  const radius = Math.min(4, barW / 2);
+  const activeIndex = selected ?? defaultIndex ?? columns.length - 1;
+  const active = columns[activeIndex];
+
+  const nowX = useMemo(() => {
+    if (nowMs == null || columns.length < 2) return null;
+    const first = Date.parse(columns[0]!.t);
+    const step = Date.parse(columns[1]!.t) - first;
+    const pos = (nowMs - first) / step;
+    if (pos < 0 || pos > columns.length) return null;
+    return Y_AXIS_W + pos * slot;
+  }, [nowMs, columns, slot]);
+
+  // Label every 6th hour on the x axis (local time).
+  const xLabels = columns
+    .map((c, i) => ({ i, label: formatTime(c.t, timeZone) }))
+    .filter(({ label }) => /^(00|06|12|18):00$/.test(label));
+
+  return (
+    <View accessibilityLabel={accessibilityLabel}>
+      <Text style={[styles.readout, { color: theme.text }]} numberOfLines={2}>
+        {active
+          ? `${dayLabel(active.t, timeZone)} ${formatTime(active.t, timeZone)} · ${describe(active)}`
+          : ' '}
+      </Text>
+      <View onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)} style={{ height }}>
+        {ticks.map((v) => (
+          <View key={v} style={[styles.gridRow, { bottom: (v / (max || 1)) * height }]} pointerEvents="none">
+            <Text style={[styles.tick, { color: theme.textMuted }]}>{formatTick(v)}</Text>
+            <View style={[styles.gridLine, { backgroundColor: v === 0 ? theme.axis : theme.grid }]} />
+          </View>
+        ))}
+        {nowX != null && (
+          <View
+            pointerEvents="none"
+            style={[styles.nowLine, { left: nowX, height, backgroundColor: theme.textMuted }]}
+          />
+        )}
+        <View style={[styles.plot, { left: Y_AXIS_W }]}>
+          {columns.map((c, i) => {
+            const isActive = i === activeIndex;
+            const visible = c.segments.filter((s) => s.value > 0);
+            return (
+              <Pressable
+                key={c.t}
+                onPressIn={() => setSelected(i)}
+                onHoverIn={() => setSelected(i)}
+                style={[styles.slot, { width: slot }]}
+                accessibilityRole="button"
+                accessibilityLabel={`${formatTime(c.t, timeZone)}: ${describe(c)}`}
+              >
+                <View style={{ width: barW, opacity: selected == null || isActive ? 1 : 0.55 }}>
+                  {[...visible].reverse().map((s, k) => {
+                    const h = (s.value / (max || 1)) * height;
+                    const isTop = k === 0;
+                    return (
+                      <View
+                        key={s.key}
+                        style={{
+                          height: Math.max(0, h - (isTop ? 0 : GAP)),
+                          marginTop: isTop ? 0 : GAP,
+                          backgroundColor: s.color,
+                          borderTopLeftRadius: isTop ? radius : 0,
+                          borderTopRightRadius: isTop ? radius : 0,
+                        }}
+                      />
+                    );
+                  })}
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+      <View style={[styles.xAxis, { marginLeft: Y_AXIS_W }]}>
+        {xLabels.map(({ i, label }) => (
+          <Text
+            key={columns[i]!.t}
+            style={[styles.tick, styles.xTick, { color: theme.textMuted, left: i * slot }]}
+          >
+            {label.slice(0, 2)}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function niceCeil(x: number): number {
+  if (x <= 0) return 1;
+  const exp = 10 ** Math.floor(Math.log10(x));
+  const f = x / exp;
+  const nice = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
+  return nice * exp;
+}
+
+const styles = StyleSheet.create({
+  readout: { fontSize: FONT.small, marginBottom: 8, minHeight: 18, fontVariant: ['tabular-nums'] },
+  gridRow: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', alignItems: 'center', height: 0 },
+  tick: { fontSize: FONT.tiny, width: Y_AXIS_W - 4, fontVariant: ['tabular-nums'] },
+  gridLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  nowLine: { position: 'absolute', top: 0, width: 1 },
+  plot: { position: 'absolute', top: 0, bottom: 0, right: 0, flexDirection: 'row', alignItems: 'flex-end' },
+  slot: { height: '100%', alignItems: 'center', justifyContent: 'flex-end' },
+  xAxis: { height: 16, marginTop: 4 },
+  xTick: { position: 'absolute', width: 24 },
+});
