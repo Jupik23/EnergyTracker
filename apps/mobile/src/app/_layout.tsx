@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useGlobalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Text, type ColorValue } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -12,9 +12,10 @@ const icon = (glyph: string) =>
 
 export default function RootLayout() {
   const t = useTheme();
+  const { zone } = useGlobalSearchParams<{ zone?: string }>();
   return (
     <SafeAreaProvider>
-      <DataProvider>
+      <DataProvider urlZone={typeof zone === 'string' ? zone.toLowerCase() : undefined}>
         <StatusBar style="auto" />
         <Tabs
           screenOptions={{

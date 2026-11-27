@@ -28,7 +28,7 @@ export default function About() {
   const t = useTheme();
   const { snapshot } = useData();
   return (
-    <Screen title="Źródła i metoda" showCountry={false}>
+    <Screen title="Źródła i metoda" showZonePicker={false}>
       <Card title="Skąd są dane">
         {SOURCES.map((s) => (
           <View key={s.url} style={{ gap: 2, paddingVertical: 4 }}>
@@ -52,9 +52,10 @@ export default function About() {
 
       <Card title="Jak liczymy emisyjność">
         <Muted>
-          Emisyjność to średnia ważona produkcją ze współczynników cyklu życia (g CO₂-eq/kWh, mediany IPCC
-          AR5; węgiel brunatny wg UBA). Liczymy ją dla produkcji krajowej — import, eksport i magazyny energii
-          są pomijane.
+          Emisyjność (pomiar i prognoza) pochodzi z Energy-Charts — jedna metoda dla całej doby, więc wykres
+          nie skacze w chwili „teraz”. Gdy Energy-Charts jej nie podaje, liczymy ją sami: średnia ważona
+          produkcją ze współczynników cyklu życia z tabeli poniżej (mediany IPCC AR5, węgiel brunatny wg UBA),
+          tylko dla produkcji krajowej.
         </Muted>
         <View style={styles.table}>
           {Object.entries(FUELS).map(([id, f]) => (

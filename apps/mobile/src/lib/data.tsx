@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
-import type { CountryCode, CountrySnapshot } from '@energy/core';
+import { router } from 'expo-router';
+import { DEFAULT_ZONE, findZone, type ZoneId, type ZoneSnapshot } from '@energy/core';
+import { loadSetting, saveSetting } from './settings';
 
 /**
  * Data is published as static JSON by the scheduled pipeline to the `data`
@@ -13,9 +15,9 @@ export const DATA_URL =
 const REFRESH_MS = 5 * 60_000;
 
 interface DataState {
-  country: CountryCode;
-  setCountry: (c: CountryCode) => void;
-  snapshot: CountrySnapshot | null;
+  zone: ZoneId;
+  setZone: (z: ZoneId) => void;
+  snapshot: ZoneSnapshot | null;
   loading: boolean;
   error: string | null;
   refresh: () => void;
@@ -23,56 +25,81 @@ interface DataState {
 
 const Ctx = createContext<DataState | null>(null);
 
-async function fetchSnapshot(c: CountryCode): Promise<CountrySnapshot> {
-  const res = await fetch(`${DATA_URL}/${c}/latest.json`);
+async function fetchSnapshot(zone: ZoneId): Promise<ZoneSnapshot> {
+  const res = await fetch(`${DATA_URL}/${zone}/latest.json`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return (await res.json()) as CountrySnapshot;
+  return (await res.json()) as ZoneSnapshot;
 }
 
-export function DataProvider({ children }: { children: ReactNode }) {
-  const [country, setCountry] = useState<CountryCode>('pl');
-  const [cache, setCache] = useState<Partial<Record<CountryCode, CountrySnapshot>>>({});
-  const [errors, setErrors] = useState<Partial<Record<CountryCode, string>>>({});
+/**
+ * `urlZone` (from `?zone=se3`) wins over the remembered choice, so links to a
+ * specific zone can be shared.
+ */
+export function DataProvider({ children, urlZone }: { children: ReactNode; urlZone?: string }) {
+  // null until the remembered zone is read, so we never fetch the default first and then switch.
+  const [zone, setZoneState] = useState<ZoneId | null>(null);
+  const [cache, setCache] = useState<Record<ZoneId, ZoneSnapshot>>({});
+  const [errors, setErrors] = useState<Record<ZoneId, string | undefined>>({});
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback((c: CountryCode) => {
-    fetchSnapshot(c)
+  useEffect(() => {
+    loadSetting('zone').then((saved) => {
+      if (urlZone && findZone(urlZone)) {
+        setZoneState(urlZone);
+        saveSetting('zone', urlZone);
+      } else {
+        setZoneState(saved && findZone(saved) ? saved : DEFAULT_ZONE);
+      }
+    });
+  }, [urlZone]);
+
+  const setZone = useCallback((z: ZoneId) => {
+    setZoneState(z);
+    saveSetting('zone', z);
+    // Keep the address bar shareable on web (no-op for navigation on native).
+    router.setParams({ zone: z });
+  }, []);
+
+  const load = useCallback((z: ZoneId) => {
+    fetchSnapshot(z)
       .then((snap) => {
-        setCache((prev) => ({ ...prev, [c]: snap }));
-        setErrors((prev) => ({ ...prev, [c]: undefined }));
+        setCache((prev) => ({ ...prev, [z]: snap }));
+        setErrors((prev) => ({ ...prev, [z]: undefined }));
       })
       .catch((e: unknown) => {
         const msg = `Nie udało się pobrać danych (${e instanceof Error ? e.message : String(e)})`;
-        setErrors((prev) => ({ ...prev, [c]: msg }));
+        setErrors((prev) => ({ ...prev, [z]: msg }));
       })
       .finally(() => setRefreshing(false));
   }, []);
 
   useEffect(() => {
-    load(country);
-    const id = setInterval(() => load(country), REFRESH_MS);
-    const sub = AppState.addEventListener('change', (s) => s === 'active' && load(country));
+    if (!zone) return;
+    load(zone);
+    const id = setInterval(() => load(zone), REFRESH_MS);
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && load(zone));
     return () => {
       clearInterval(id);
       sub.remove();
     };
-  }, [country, load]);
+  }, [zone, load]);
 
-  const snapshot = cache[country] ?? null;
-  const error = errors[country] ?? null;
+  const current = zone ?? DEFAULT_ZONE;
+  const snapshot = zone ? (cache[zone] ?? null) : null;
+  const error = zone ? (errors[zone] ?? null) : null;
   const value = useMemo<DataState>(
     () => ({
-      country,
-      setCountry,
+      zone: current,
+      setZone,
       snapshot,
       loading: refreshing || (!snapshot && !error),
       error,
       refresh: () => {
         setRefreshing(true);
-        load(country);
+        load(current);
       },
     }),
-    [country, snapshot, refreshing, error, load],
+    [current, setZone, snapshot, refreshing, error, load],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

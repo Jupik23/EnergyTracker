@@ -1,6 +1,6 @@
 import {
   FUEL_CATEGORIES,
-  type CountrySnapshot,
+  type ZoneSnapshot,
   type FuelCategory,
   type MixPoint,
   type Point,
@@ -37,9 +37,13 @@ export function hourlyMix(mix: MixPoint[]): { t: string; mw: Partial<Record<Fuel
     }));
 }
 
-/** Measured intensity followed by forecast, without overlap. */
-export function co2Series(s: CountrySnapshot): { measured: Point[]; forecast: Point[] } {
-  const measured = s.mix.map((p) => ({ t: p.t, v: p.co2 }));
+/**
+ * Measured intensity followed by forecast, without overlap. Prefers Energy-Charts'
+ * measured values (same method as the forecast); falls back to our own
+ * calculation from the mix when they are missing.
+ */
+export function co2Series(s: ZoneSnapshot): { measured: Point[]; forecast: Point[] } {
+  const measured = s.co2Measured?.length ? s.co2Measured : s.mix.map((p) => ({ t: p.t, v: p.co2 }));
   const lastMs = measured.length ? Date.parse(measured.at(-1)!.t) : -Infinity;
   return { measured, forecast: s.co2Forecast.filter((p) => Date.parse(p.t) > lastMs) };
 }

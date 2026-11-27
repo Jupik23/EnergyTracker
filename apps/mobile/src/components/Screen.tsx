@@ -3,18 +3,18 @@ import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View }
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../lib/data';
 import { useTheme } from '../lib/theme';
-import { CountryPicker } from './CountryPicker';
+import { ZonePicker } from './ZonePicker';
 import { Card, Muted } from './ui';
 
 /** Shared screen shell: safe-area padding, centred max-width column on web, pull to refresh, loading and error states. */
 export function Screen({
   title,
   children,
-  showCountry = true,
+  showZonePicker = true,
 }: {
   title: string;
   children: ReactNode;
-  showCountry?: boolean;
+  showZonePicker?: boolean;
 }) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
@@ -31,7 +31,7 @@ export function Screen({
     >
       <View style={styles.column}>
         <Text style={[styles.title, { color: t.text }]}>{title}</Text>
-        {showCountry && <CountryPicker />}
+        {showZonePicker && <ZonePicker />}
         {error && (
           <Card>
             <Text style={{ color: t.text, fontWeight: '600' }}>⚠ {error}</Text>
@@ -40,7 +40,7 @@ export function Screen({
             </Muted>
           </Card>
         )}
-        {showCountry && !snapshot && loading ? <ActivityIndicator style={{ marginTop: 48 }} /> : children}
+        {showZonePicker && !snapshot && loading ? <ActivityIndicator style={{ marginTop: 48 }} /> : children}
       </View>
     </ScrollView>
   );
