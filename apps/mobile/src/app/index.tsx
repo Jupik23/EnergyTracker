@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { FUEL_CATEGORIES, FUEL_LABELS_PL } from '@energy/core';
+import { FUEL_CATEGORIES, FUEL_LABELS_PL, countryByCode } from '@energy/core';
 import { MixBar } from '../components/MixBar';
 import { Screen } from '../components/Screen';
 import { TimeColumns, type Column } from '../components/TimeColumns';
@@ -52,7 +52,8 @@ export default function Dashboard() {
   const tz = s.timezone;
   const price = charts.price;
   const priceNow = price ? pointAt(price.points, now) : null;
-  const level = latest ? co2Level(latest.co2) : null;
+  const co2Now = co2Series(s).measured.at(-1)?.v ?? latest?.co2;
+  const level = latest && co2Now != null ? co2Level(co2Now) : null;
   const nowIdx = charts.priceCols.findIndex(
     (c) => Date.parse(c.t) <= now.getTime() && now.getTime() < Date.parse(c.t) + 3_600_000,
   );
@@ -63,7 +64,7 @@ export default function Dashboard() {
         <Card>
           <Text style={[styles.label, { color: t.textMuted }]}>Emisyjność prądu (g CO₂ / kWh)</Text>
           <View style={styles.heroRow}>
-            <Text style={[styles.hero, { color: t.text }]}>{formatNumber(latest.co2)}</Text>
+            <Text style={[styles.hero, { color: t.text }]}>{formatNumber(co2Now ?? 0)}</Text>
             <View style={[styles.pill, { backgroundColor: t.status[level.level] }]}>
               <Text style={[styles.pillText, { color: level.level === 'warning' ? '#0b0b0b' : '#ffffff' }]}>
                 {level.icon} {level.label}
@@ -86,7 +87,18 @@ export default function Dashboard() {
         </Card>
       ) : (
         <Card>
-          <Muted>Brak danych pomiarowych z dzisiaj — pojawią się po pierwszej publikacji operatora.</Muted>
+          <Muted>
+            {countryByCode(s.country).hasMix
+              ? 'Brak danych pomiarowych z dzisiaj — pojawią się po pierwszej publikacji operatora.'
+              : 'Dla tego kraju nie ma publicznych danych o produkcji — pokazujemy ceny i prognozę emisyjności.'}
+          </Muted>
+          {price && (
+            <StatTile
+              label="Cena hurtowa teraz"
+              value={priceNow ? formatPricePerKwh(priceNow.v, price.currency) : '—'}
+              hint="rynek dnia następnego"
+            />
+          )}
         </Card>
       )}
 

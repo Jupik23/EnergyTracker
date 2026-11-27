@@ -9,8 +9,8 @@ on:
     - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
-      countries:
-        description: Comma-separated country codes (empty = all)
+      zones:
+        description: Comma-separated zone ids or country codes, e.g. "pl,se3,it" (empty = all)
         required: false
         default: ''
 
@@ -24,7 +24,8 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # A cold run (empty cache) makes ~95 rate-limited requests; normal runs ~35.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
 
@@ -42,10 +43,10 @@ jobs:
       # straight through tsx (path alias for @energy/core lives in tsconfig.base.json).
       - name: Run pipeline
         env:
-          COUNTRIES: ${{ inputs.countries }}
+          ZONES: ${{ inputs.zones }}
         run: |
           args=(--out data-out)
-          if [ -n "$COUNTRIES" ]; then args+=(--countries "$COUNTRIES"); fi
+          if [ -n "$ZONES" ]; then args+=(--zones "$ZONES"); fi
           npx --yes tsx@4.23.15 --tsconfig packages/pipeline/tsconfig.json \
             packages/pipeline/src/run.ts "${args[@]}"
 

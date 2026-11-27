@@ -12,6 +12,15 @@ Wszystkie źródła sprawdzone zapytaniami „na żywo” przy budowie prototypu
 | TGE (Towarowa Giełda Energii)                                   | Fixing RDN                                                                                                     | —                                                                       | Brak darmowego API; ten sam wynik aukcji SDAC jest w Energy-Charts/ENTSO-E i w RCE                                       | ❌                                |
 | Electricity Maps                                                | Emisyjność, prognozy                                                                                           | tak                                                                     | Darmowy plan tylko niekomercyjny, 1 strefa                                                                               | ❌ (licencja)                     |
 
+## Pokrycie (sprawdzone listopad 2026)
+
+- **Miks produkcji:** 26 krajów. Rozdzielczość zależy od kraju: 15 min (np. PL, DE, CZ, FR), 30 min (IE),
+  1 h (np. BE, GR, PT, SK). Opóźnienie publikacji od ok. 1 h do kilku godzin (np. BG, RS).
+- **Dania:** Energy-Charts nie publikuje miksu (`dk` → 404, `dk1`/`dk2` → 400). Są ceny DK1/DK2 i prognoza CO₂.
+- **Ceny:** 41 stref cenowych, wszystkie w EUR/MWh, 15 min, dziś + jutro. Dla Polski dodatkowo RCE w PLN.
+- **Paliwa spoza IPCC:** łupki naftowe (Estonia) i torf (Finlandia, Irlandia) — współczynniki szacunkowe
+  1100 i 1050 g/kWh.
+
 ## Dlaczego RCE dla Polski
 
 Taryfy dynamiczne w Polsce rozliczają energię według cen z rynku dnia następnego. RCE publikowana przez PSE
@@ -26,7 +35,10 @@ krajów używamy cen day-ahead w EUR z Energy-Charts.
 
 ## Emisyjność — metoda
 
-Liczymy sami z miksu produkcji (średnia ważona) ze współczynników cyklu życia IPCC AR5 (mediany),
-węgiel brunatny 1100 g/kWh (UBA). Import/eksport i magazyny pomijamy (metoda „production-based”).
-Prognoza pochodzi z Energy-Charts i może się różnić o kilka–kilkanaście procent od naszej wartości.
+**Źródło główne:** Energy-Charts `/co2eq` — wartości zmierzone i prognoza tą samą metodą, więc wykres jest
+ciągły. Porównanie (27.11.2026 18:30): Szwecja 21 g (Energy-Charts) vs 83 g (nasze), Polska 739 vs 680 —
+nasze współczynniki są zgrubne, zwłaszcza 700 g dla kategorii „inne”.
+
+**Zapas:** gdy `/co2eq` nie odpowie, liczymy sami z miksu (średnia ważona) ze współczynników cyklu życia
+IPCC AR5 (mediany), węgiel brunatny 1100 g/kWh (UBA); import/eksport i magazyny pomijamy.
 Współczynniki: `packages/core/src/fuels.ts`.

@@ -3,8 +3,8 @@
 [![CI](https://github.com/Jupik23/EnergyTracker/actions/workflows/ci.yml/badge.svg)](https://github.com/Jupik23/EnergyTracker/actions/workflows/ci.yml)
 [![Update data](https://github.com/Jupik23/EnergyTracker/actions/workflows/update-data.yml/badge.svg)](https://github.com/Jupik23/EnergyTracker/actions/workflows/update-data.yml)
 
-Z czego teraz powstaje prąd, ile CO₂ emituje każda kWh i **kiedy najlepiej włączyć pralkę** — w Polsce,
-Niemczech, Francji i Czechach. Jedna aplikacja na web, Androida i iOS.
+Z czego teraz powstaje prąd, ile CO₂ emituje każda kWh i **kiedy najlepiej włączyć pralkę** — w 27 krajach
+Europy i 41 strefach cenowych (w tym SE1–4, NO1–5, DK1–2 i 7 stref Włoch). Jedna aplikacja na web, Androida i iOS.
 
 **Wersja web:** https://jupik23.github.io/EnergyTracker/
 
@@ -43,7 +43,7 @@ Wymagany Node 22+.
 npm install
 npm run web                 # aplikacja w przeglądarce (dane z produkcyjnej gałęzi `data`)
 npm start                   # Expo dev server — zeskanuj QR w Expo Go na telefonie
-npm run pipeline -- --out data-out --countries pl   # uruchom job danych lokalnie
+npm run pipeline -- --out data-out --zones pl,se3   # job danych lokalnie (bez --zones: wszystkie strefy)
 npm run check               # format + lint + typecheck + testy (to samo co CI)
 ```
 

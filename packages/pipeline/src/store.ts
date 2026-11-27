@@ -2,36 +2,51 @@ import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   SCHEMA_VERSION,
-  type CountryCode,
-  type CountrySnapshot,
+  localDate,
   type DataIndex,
+  type HistoryDay,
   type IndexEntry,
+  type ZoneSnapshot,
 } from '@energy/core';
-import { localDate } from './dates';
 
 /**
  * Static JSON "API" layout, published to the `data` branch:
  *
- *   v1/index.json                      overview of all countries
- *   v1/<cc>/latest.json                full snapshot (mix today, prices, forecast)
- *   v1/<cc>/history/<YYYY-MM-DD>.json  daily mix archive (rewritten during the day)
+ *   v1/index.json                        overview of all zones
+ *   v1/<zone>/latest.json                full snapshot (mix today, prices, forecast)
+ *   v1/<zone>/history/<YYYY-MM-DD>.json  daily mix + prices archive (rewritten during the day)
  */
 export const HISTORY_DAYS = 90;
 
-export async function writeSnapshot(root: string, s: CountrySnapshot): Promise<void> {
-  const dir = join(root, 'v1', s.country);
+export async function readSnapshot(root: string, zone: string): Promise<ZoneSnapshot | null> {
+  try {
+    return JSON.parse(await readFile(join(root, 'v1', zone, 'latest.json'), 'utf8')) as ZoneSnapshot;
+  } catch {
+    return null;
+  }
+}
+
+export async function writeSnapshot(root: string, s: ZoneSnapshot): Promise<void> {
+  const zone = s.zone ?? s.country;
+  const dir = join(root, 'v1', zone);
   const historyDir = join(dir, 'history');
   await mkdir(historyDir, { recursive: true });
   await writeJson(join(dir, 'latest.json'), s);
 
-  const day = localDate(new Date(s.generatedAt), s.timezone);
+  const day = localDate(s.generatedAt, s.timezone);
   if (s.mix.length > 0) {
-    await writeJson(join(historyDir, `${day}.json`), {
+    const history: HistoryDay = {
       schemaVersion: SCHEMA_VERSION,
+      zone,
       country: s.country,
       date: day,
       mix: s.mix,
-    });
+      prices: s.prices.map((p) => ({
+        ...p,
+        points: p.points.filter((pt) => localDate(pt.t, s.timezone) === day),
+      })),
+    };
+    await writeJson(join(historyDir, `${day}.json`), history);
   }
   await pruneHistory(historyDir, day);
 }
@@ -49,27 +64,29 @@ async function pruneHistory(dir: string, today: string): Promise<void> {
 
 export async function readIndex(root: string): Promise<DataIndex | null> {
   try {
-    return JSON.parse(await readFile(join(root, 'v1', 'index.json'), 'utf8')) as DataIndex;
+    const raw = JSON.parse(await readFile(join(root, 'v1', 'index.json'), 'utf8')) as Partial<DataIndex>;
+    // Index files written before zones existed have no `zones` array; start fresh.
+    return Array.isArray(raw.zones) ? (raw as DataIndex) : null;
   } catch {
     return null;
   }
 }
 
 /**
- * Merges this run's results into the previous index so a country whose
+ * Merges this run's results into the previous index so a zone whose
  * upstream failed keeps its last good timestamp (marked ok: false).
  */
 export function mergeIndex(prev: DataIndex | null, results: IndexEntry[], now: Date): DataIndex {
-  const byCountry = new Map<CountryCode, IndexEntry>();
-  for (const e of prev?.countries ?? []) byCountry.set(e.country, e);
+  const byZone = new Map<string, IndexEntry>();
+  for (const e of prev?.zones ?? []) byZone.set(e.zone, e);
   for (const r of results) {
-    const old = byCountry.get(r.country);
-    byCountry.set(r.country, r.ok ? r : { ...old, ...r, updatedAt: old?.updatedAt ?? r.updatedAt });
+    const old = byZone.get(r.zone);
+    byZone.set(r.zone, r.ok ? r : { ...old, ...r, updatedAt: old?.updatedAt ?? r.updatedAt });
   }
   return {
     schemaVersion: SCHEMA_VERSION,
     generatedAt: now.toISOString(),
-    countries: [...byCountry.values()],
+    zones: [...byZone.values()],
   };
 }
 

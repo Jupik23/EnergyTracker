@@ -51,6 +51,9 @@ export const FUELS: Record<string, FuelDef> = {
   fossil_coal_derived_gas: { category: 'coal', gCo2PerKwh: 820 },
   fossil_gas: { category: 'gas', gCo2PerKwh: 490 },
   fossil_oil: { category: 'other', gCo2PerKwh: 650 },
+  // Estimates (no IPCC median): Estonian oil-shale and Finnish/Irish peat plants are among the dirtiest in Europe.
+  fossil_oil_shale: { category: 'other', gCo2PerKwh: 1100 },
+  fossil_peat: { category: 'other', gCo2PerKwh: 1050 },
   nuclear: { category: 'nuclear', gCo2PerKwh: 12 },
   hydro_run_of_river: { category: 'hydro', gCo2PerKwh: 24 },
   hydro_water_reservoir: { category: 'hydro', gCo2PerKwh: 24 },
