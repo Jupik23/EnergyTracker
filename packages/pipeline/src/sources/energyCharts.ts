@@ -76,6 +76,7 @@ export async function fetchPrice(biddingZone: string, start: string, end: string
  * Measured + forecast CO₂ intensity. This endpoint is not in the published
  * OpenAPI spec, so it is treated as best-effort: callers must tolerate failure.
  */
-export async function fetchCo2(country: string) {
-  return parseCo2(await fetchJson<Co2Response>(`${BASE}/co2eq?country=${country}`, { retries: 1 }));
+export async function fetchCo2(country: string, start?: string, end?: string) {
+  const range = start && end ? `&start=${start}&end=${end}` : '';
+  return parseCo2(await fetchJson<Co2Response>(`${BASE}/co2eq?country=${country}${range}`, { retries: 1 }));
 }

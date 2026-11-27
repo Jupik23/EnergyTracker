@@ -4,7 +4,7 @@ import {
   SCHEMA_VERSION,
   localDate,
   type DataIndex,
-  type HistoryDay,
+  type ArchiveDay,
   type IndexEntry,
   type ZoneSnapshot,
 } from '@energy/core';
@@ -35,7 +35,7 @@ export async function writeSnapshot(root: string, s: ZoneSnapshot): Promise<void
 
   const day = localDate(s.generatedAt, s.timezone);
   if (s.mix.length > 0) {
-    const history: HistoryDay = {
+    const history: ArchiveDay = {
       schemaVersion: SCHEMA_VERSION,
       zone,
       country: s.country,
