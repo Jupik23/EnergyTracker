@@ -3,9 +3,9 @@ import co2 from './fixtures/ec-co2eq-pl.json';
 import price from './fixtures/ec-price-pl.json';
 import power from './fixtures/ec-public-power-pl.json';
 import rce from './fixtures/pse-rce-pln.json';
-import { parseCo2Forecast, parsePrice, parsePublicPower } from '../src/sources/energyCharts';
+import { parseCo2, parsePrice, parsePublicPower } from '../src/sources/energyCharts';
 import { parseRce } from '../src/sources/pse';
-import { addDays, localDate } from '../src/dates';
+import { addDays, localDate } from '@energy/core';
 
 describe('Energy-Charts parsers (real API fixtures)', () => {
   it('parses public_power into UTC mix points', () => {
@@ -25,10 +25,12 @@ describe('Energy-Charts parsers (real API fixtures)', () => {
     expect(pts[0]).toEqual({ t: '2026-11-27T23:00:00.000Z', v: 232.54 });
   });
 
-  it('keeps only the forecast part of co2eq', () => {
-    const pts = parseCo2Forecast(co2 as never);
-    expect(pts.length).toBeGreaterThan(0);
-    for (const p of pts) expect(Number.isInteger(p.v)).toBe(true);
+  it('splits co2eq into measured values and the remaining forecast', () => {
+    const { measured, forecast } = parseCo2(co2 as never);
+    expect(measured.length).toBeGreaterThan(0);
+    expect(forecast.length).toBeGreaterThan(0);
+    expect(measured.at(-1)!.t < forecast[0]!.t).toBe(true);
+    for (const pt of [...measured, ...forecast]) expect(Number.isInteger(pt.v)).toBe(true);
   });
 });
 

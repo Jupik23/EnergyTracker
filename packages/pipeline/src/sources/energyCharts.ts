@@ -42,23 +42,29 @@ export function parsePrice(json: V2Response): Point[] {
     .map((d) => ({ t: iso(d.timestamp), v: d.values.day_ahead_price as number }));
 }
 
-/** Only the forecast part, from the first interval without a measured value onward. */
-export function parseCo2Forecast(json: Co2Response): Point[] {
-  const out: Point[] = [];
-  const forecast = json.co2eq_forecast ?? [];
+/** Splits co2eq into measured values and the forecast for intervals not yet measured. */
+export function parseCo2(json: Co2Response): { measured: Point[]; forecast: Point[] } {
+  const measured: Point[] = [];
+  const forecast: Point[] = [];
   json.unix_seconds.forEach((s, i) => {
-    const measured = json.co2eq?.[i];
-    const f = forecast[i];
-    if (measured == null && typeof f === 'number') {
-      out.push({ t: new Date(s * 1000).toISOString(), v: Math.round(f) });
-    }
+    const t = new Date(s * 1000).toISOString();
+    const m = json.co2eq?.[i];
+    const f = json.co2eq_forecast?.[i];
+    if (typeof m === 'number') measured.push({ t, v: Math.round(m) });
+    else if (typeof f === 'number') forecast.push({ t, v: Math.round(f) });
   });
-  return out;
+  return { measured, forecast };
 }
 
-export async function fetchPublicPower(country: string, start: string, end: string) {
+export async function fetchPublicPower(
+  country: string,
+  start: string,
+  end: string,
+): Promise<{ mix: MixPoint[]; intervalMinutes: number }> {
   const url = `${BASE}/v2/public_power?country=${country}&start=${start}&end=${end}`;
-  return parsePublicPower(await fetchJson<V2Response>(url));
+  const json = await fetchJson<V2Response>(url);
+  // Resolution differs by country: 15 min (PL, DE), 30 min (IE) or hourly (BE, GR).
+  return { mix: parsePublicPower(json), intervalMinutes: json.interval_minutes || 15 };
 }
 
 export async function fetchPrice(biddingZone: string, start: string, end: string) {
@@ -67,9 +73,9 @@ export async function fetchPrice(biddingZone: string, start: string, end: string
 }
 
 /**
- * CO₂ forecast. This endpoint is not in the published OpenAPI spec, so it is
- * treated as best-effort: callers must tolerate failure.
+ * Measured + forecast CO₂ intensity. This endpoint is not in the published
+ * OpenAPI spec, so it is treated as best-effort: callers must tolerate failure.
  */
-export async function fetchCo2Forecast(country: string) {
-  return parseCo2Forecast(await fetchJson<Co2Response>(`${BASE}/co2eq?country=${country}`, { retries: 1 }));
+export async function fetchCo2(country: string) {
+  return parseCo2(await fetchJson<Co2Response>(`${BASE}/co2eq?country=${country}`, { retries: 1 }));
 }
