@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+
+  # Expo/React Native versions must move together with the Expo SDK
+  # (`npx expo install --fix`), so Dependabot only handles the rest.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore
+    groups:
+      dev-tooling:
+        dependency-type: development
+    ignore:
+      - dependency-name: 'expo*'
+      - dependency-name: '@expo/*'
+      - dependency-name: 'react'
+      - dependency-name: 'react-dom'
+      - dependency-name: 'react-native*'
+      - dependency-name: '@types/react'
+      - dependency-name: 'eslint-config-expo'
+      - dependency-name: 'typescript'
