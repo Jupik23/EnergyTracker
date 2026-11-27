@@ -35,6 +35,14 @@ zapytaniach o dowolny zakres historii. Kontrakt danych (`packages/core/src/types
 **Ryzyko:** GitHub wyłącza harmonogramy w publicznych repo po 60 dniach bez aktywności (commitów na `main`).
 Przed wyłączeniem przychodzi e-mail; wystarczy kliknąć „Enable workflow” albo zrobić dowolny commit.
 
+### 2a. Historia na osobnej gałęzi `history`
+
+Archiwum (pliki miesięczne per kraj, godzinowo, ~30 KB/miesiąc) jest na osobnej gałęzi, żeby job co 15 min
+klonował tylko małą gałąź `data`. Workflow `update-history.yml` działa raz dziennie (bieżący i poprzedni
+miesiąc) i ręcznie do backfillu; publikuje po każdym roku i pomija gotowe miesiące, więc przerwany backfill
+można po prostu uruchomić ponownie. Przy publikacji zostaje `.git` z klonu, więc wysyłane są tylko zmienione
+pliki.
+
 ### 3. Wspólny pakiet `@energy/core`
 
 Typy kontraktu danych i czysta logika (miks, CO₂, wyszukiwanie okna) są współdzielone przez job i aplikację,

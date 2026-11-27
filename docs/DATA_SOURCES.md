@@ -21,6 +21,10 @@ Wszystkie źródła sprawdzone zapytaniami „na żywo” przy budowie prototypu
 - **Paliwa spoza IPCC:** łupki naftowe (Estonia) i torf (Finlandia, Irlandia) — współczynniki szacunkowe
   1100 i 1050 g/kWh.
 
+- **Historia:** `public_power` i `co2eq` przyjmują zakres dat (`start`, `end`); miesiąc to jedno zapytanie
+  (ok. 1,6 MB dla PL, 15 min). Dane sięgają 2015 r. (starsze lata w rozdzielczości godzinowej). Archiwum
+  aplikacji startuje od 2023-01 — można je wydłużyć ręcznym uruchomieniem workflow `Update history`.
+
 ## Dlaczego RCE dla Polski
 
 Taryfy dynamiczne w Polsce rozliczają energię według cen z rynku dnia następnego. RCE publikowana przez PSE

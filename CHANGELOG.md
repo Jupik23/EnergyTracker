@@ -6,6 +6,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), wersjonowanie:
 
 ### Added
 
+- Ekran „Historia”: kalendarz dni podbarwiony emisyjnością, miks i emisyjność godzina po godzinie dla
+  dowolnego dnia, średnie miesięczne pokazujące różnice między porami roku; link do dnia `?date=2025-05-15`.
+- Archiwum historyczne na gałęzi `history` (miesięczne pliki per kraj, godzinowo) z codzienną aktualizacją
+  i ręcznym backfillem.
 - 27 krajów i 41 stref cenowych (m.in. SE1–4, NO1–5, DK1–2, 7 stref Włoch) z wyszukiwarką; wybrany obszar jest
   zapamiętywany na urządzeniu.
 - Archiwum dzienne zawiera teraz także ceny.
