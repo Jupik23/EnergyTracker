@@ -11,6 +11,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@energy/core": ["./packages/core/src/index.ts"]
+    }
   }
 }
