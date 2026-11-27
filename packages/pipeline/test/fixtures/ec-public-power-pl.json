@@ -1,0 +1,326 @@
+{
+ "schema_version": "2.0",
+ "endpoint": "public_power",
+ "country": "pl",
+ "bidding_zone": null,
+ "timezone": "Europe/Warsaw",
+ "resolution": "PT15M",
+ "interval_minutes": 15,
+ "unit": "MW",
+ "generated_at": "2026-11-27T20:01:39+01:00",
+ "available_from": "2026-11-27T00:00:00+01:00",
+ "available_until": "2026-11-27T17:15:00+01:00",
+ "series": [
+  {
+   "id": "hydro_pumped_storage_consumption",
+   "name": "Hydro pumped storage consumption"
+  },
+  {
+   "id": "battery_consumption",
+   "name": "Battery Consumption"
+  },
+  {
+   "id": "cross_border_electricity_trading",
+   "name": "Cross border electricity trading"
+  },
+  {
+   "id": "hydro_run_of_river",
+   "name": "Hydro Run-of-River"
+  },
+  {
+   "id": "biomass",
+   "name": "Biomass"
+  },
+  {
+   "id": "fossil_brown_coal_lignite",
+   "name": "Fossil brown coal / lignite"
+  },
+  {
+   "id": "fossil_hard_coal",
+   "name": "Fossil hard coal"
+  },
+  {
+   "id": "fossil_oil",
+   "name": "Fossil oil"
+  },
+  {
+   "id": "fossil_coal_derived_gas",
+   "name": "Fossil coal-derived gas"
+  },
+  {
+   "id": "fossil_gas",
+   "name": "Fossil gas"
+  },
+  {
+   "id": "hydro_water_reservoir",
+   "name": "Hydro water reservoir"
+  },
+  {
+   "id": "hydro_pumped_storage",
+   "name": "Hydro pumped storage"
+  },
+  {
+   "id": "battery",
+   "name": "Battery"
+  },
+  {
+   "id": "others",
+   "name": "Others"
+  },
+  {
+   "id": "other_renewables",
+   "name": "Other renewables"
+  },
+  {
+   "id": "wind_offshore",
+   "name": "Wind offshore"
+  },
+  {
+   "id": "wind_onshore",
+   "name": "Wind onshore"
+  },
+  {
+   "id": "solar",
+   "name": "Solar"
+  },
+  {
+   "id": "load",
+   "name": "Load"
+  },
+  {
+   "id": "residual_load",
+   "name": "Residual load"
+  },
+  {
+   "id": "renewable_share_of_load",
+   "name": "Renewable share of load",
+   "unit": "%"
+  },
+  {
+   "id": "renewable_share_of_generation",
+   "name": "Renewable share of generation",
+   "unit": "%"
+  }
+ ],
+ "data": [
+  {
+   "timestamp": "2026-11-27T00:00:00+01:00",
+   "values": {
+    "hydro_pumped_storage_consumption": -212.8,
+    "battery_consumption": 0,
+    "cross_border_electricity_trading": 25.8,
+    "hydro_run_of_river": 85.6,
+    "biomass": 353.2,
+    "fossil_brown_coal_lignite": 4485.8,
+    "fossil_hard_coal": 9242.3,
+    "fossil_oil": 218.6,
+    "fossil_coal_derived_gas": 201.5,
+    "fossil_gas": 2792.4,
+    "hydro_water_reservoir": 20.8,
+    "hydro_pumped_storage": 0,
+    "battery": 0,
+    "others": 398.5,
+    "other_renewables": 131.4,
+    "wind_offshore": 210.8,
+    "wind_onshore": 2011.5,
+    "solar": 0,
+    "load": 19129.6,
+    "residual_load": 16907.2,
+    "renewable_share_of_load": 14.7,
+    "renewable_share_of_generation": 14
+   }
+  },
+  {
+   "timestamp": "2026-11-27T00:15:00+01:00",
+   "values": {
+    "hydro_pumped_storage_consumption": -567.7,
+    "battery_consumption": 0,
+    "cross_border_electricity_trading": 207.6,
+    "hydro_run_of_river": 85.7,
+    "biomass": 353.2,
+    "fossil_brown_coal_lignite": 4323.4,
+    "fossil_hard_coal": 9256.4,
+    "fossil_oil": 215.4,
+    "fossil_coal_derived_gas": 199.3,
+    "fossil_gas": 2917.6,
+    "hydro_water_reservoir": 20.8,
+    "hydro_pumped_storage": 0,
+    "battery": 0,
+    "others": 398.3,
+    "other_renewables": 130.7,
+    "wind_offshore": 268.8,
+    "wind_onshore": 1979.5,
+    "solar": 0,
+    "load": 19040.3,
+    "residual_load": 16792.1,
+    "renewable_share_of_load": 14.9,
+    "renewable_share_of_generation": 14.1
+   }
+  },
+  {
+   "timestamp": "2026-11-27T00:30:00+01:00",
+   "values": {
+    "hydro_pumped_storage_consumption": -966.7,
+    "battery_consumption": 0,
+    "cross_border_electricity_trading": 443.3,
+    "hydro_run_of_river": 85.7,
+    "biomass": 353.5,
+    "fossil_brown_coal_lignite": 4161.2,
+    "fossil_hard_coal": 8812.9,
+    "fossil_oil": 216.4,
+    "fossil_coal_derived_gas": 199.6,
+    "fossil_gas": 2939.9,
+    "hydro_water_reservoir": 20.8,
+    "hydro_pumped_storage": 0,
+    "battery": 0,
+    "others": 399.9,
+    "other_renewables": 131.1,
+    "wind_offshore": 219.2,
+    "wind_onshore": 2010.2,
+    "solar": 0,
+    "load": 18961.1,
+    "residual_load": 16731.7,
+    "renewable_share_of_load": 14.9,
+    "renewable_share_of_generation": 14.4
+   }
+  },
+  {
+   "timestamp": "2026-11-27T00:45:00+01:00",
+   "values": {
+    "hydro_pumped_storage_consumption": -1368.6,
+    "battery_consumption": 0,
+    "cross_border_electricity_trading": 613.3,
+    "hydro_run_of_river": 85.8,
+    "biomass": 352.7,
+    "fossil_brown_coal_lignite": 4161,
+    "fossil_hard_coal": 9095.3,
+    "fossil_oil": 218,
+    "fossil_coal_derived_gas": 197.9,
+    "fossil_gas": 2951.5,
+    "hydro_water_reservoir": 20.8,
+    "hydro_pumped_storage": 0,
+    "battery": 0,
+    "others": 396,
+    "other_renewables": 130.2,
+    "wind_offshore": 222,
+    "wind_onshore": 2049.3,
+    "solar": 0,
+    "load": 18493.9,
+    "residual_load": 16222.5,
+    "renewable_share_of_load": 15.5,
+    "renewable_share_of_generation": 14.4
+   }
+  },
+  {
+   "timestamp": "2026-11-27T01:00:00+01:00",
+   "values": {
+    "hydro_pumped_storage_consumption": -1367.4,
+    "battery_consumption": 0,
+    "cross_border_electricity_trading": 179.7,
+    "hydro_run_of_river": 85.4,
+    "biomass": 353.2,
+    "fossil_brown_coal_lignite": 4246.6,
+    "fossil_hard_coal": 9215.2,
+    "fossil_oil": 217,
+    "fossil_coal_derived_gas": 199.4,
+    "fossil_gas": 3109.4,
+    "hydro_water_reservoir": 20.7,
+    "hydro_pumped_storage": 0,
+    "battery": 0,
+    "others": 396.8,
+    "other_renewables": 130.8,
+    "wind_offshore": 233.2,
+    "wind_onshore": 2121.4,
+    "solar": 0,
+    "load": 18543.6,
+    "residual_load": 16189,
+    "renewable_share_of_load": 15.9,
+    "renewable_share_of_generation": 14.5
+   }
+  },
+  {
+   "timestamp": "2026-11-27T01:15:00+01:00",
+   "values": {
+    "hydro_pumped_storage_consumption": -1366.7,
+    "battery_consumption": 0,
+    "cross_border_electricity_trading": -24.9,
+    "hydro_run_of_river": 85.8,
+    "biomass": 353.4,
+    "fossil_brown_coal_lignite": 4240.5,
+    "fossil_hard_coal": 9049.3,
+    "fossil_oil": 216.2,
+    "fossil_coal_derived_gas": 199.4,
+    "fossil_gas": 3066.9,
+    "hydro_water_reservoir": 20.7,
+    "hydro_pumped_storage": 0,
+    "battery": 0,
+    "others": 398,
+    "other_renewables": 130.8,
+    "wind_offshore": 256,
+    "wind_onshore": 2205.4,
+    "solar": 0,
+    "load": 18367.3,
+    "residual_load": 15906,
+    "renewable_share_of_load": 16.6,
+    "renewable_share_of_generation": 15.1
+   }
+  },
+  {
+   "timestamp": "2026-11-27T01:30:00+01:00",
+   "values": {
+    "hydro_pumped_storage_consumption": -1365.8,
+    "battery_consumption": 0,
+    "cross_border_electricity_trading": -51.7,
+    "hydro_run_of_river": 85.8,
+    "biomass": 353.1,
+    "fossil_brown_coal_lignite": 4240.6,
+    "fossil_hard_coal": 9075.6,
+    "fossil_oil": 216.8,
+    "fossil_coal_derived_gas": 198,
+    "fossil_gas": 3082.6,
+    "hydro_water_reservoir": 20.7,
+    "hydro_pumped_storage": 0,
+    "battery": 0,
+    "others": 397.7,
+    "other_renewables": 130.9,
+    "wind_offshore": 304.6,
+    "wind_onshore": 2322.2,
+    "solar": 0,
+    "load": 18297.6,
+    "residual_load": 15670.8,
+    "renewable_share_of_load": 17.6,
+    "renewable_share_of_generation": 15.7
+   }
+  },
+  {
+   "timestamp": "2026-11-27T01:45:00+01:00",
+   "values": {
+    "hydro_pumped_storage_consumption": -1365.7,
+    "battery_consumption": -13.6,
+    "cross_border_electricity_trading": 11.6,
+    "hydro_run_of_river": 85.5,
+    "biomass": 352,
+    "fossil_brown_coal_lignite": 4232.8,
+    "fossil_hard_coal": 8966.6,
+    "fossil_oil": 216.8,
+    "fossil_coal_derived_gas": 199.5,
+    "fossil_gas": 3089.8,
+    "hydro_water_reservoir": 20.7,
+    "hydro_pumped_storage": 0,
+    "battery": 0,
+    "others": 394.4,
+    "other_renewables": 130.6,
+    "wind_offshore": 439.6,
+    "wind_onshore": 2358.7,
+    "solar": 0,
+    "load": 18144,
+    "residual_load": 15345.7,
+    "renewable_share_of_load": 18.7,
+    "renewable_share_of_generation": 16.5
+   }
+  }
+ ],
+ "attributes": {},
+ "license": "CC BY 4.0 (creativecommons.org/licenses/by/4.0), attribution: energy-charts.info",
+ "deprecated": false
+}
