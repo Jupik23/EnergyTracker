@@ -20,6 +20,11 @@ ani bazy. GitHub Actions co 15 min:
 
 Aplikacja czyta pliki z `raw.githubusercontent.com` (CDN, CORS `*`, cache ~5 min).
 
+**Co jest pobierane w którym przebiegu** (`packages/pipeline/src/refresh.ts`): miks — zawsze (zmienia się
+co 15 min); ceny — tylko gdy brak cen na dziś, od 13:00 do publikacji cen na jutro, lub gdy cache ma >12 h;
+prognoza CO₂ — co godzinę, kraje rozłożone na cztery kwadranse. Wspólny limiter (2,5 s między zapytaniami do
+jednego hosta) chroni przed HTTP 429. Typowy przebieg to ok. 35 zapytań, pierwszy (pusty cache) ok. 95.
+
 **Koszt:** 0 zł (repo publiczne = nielimitowane minuty Actions). Przy repo prywatnym 96 uruchomień
 dziennie przekroczyłoby darmowe 2000 min/mies.
 
