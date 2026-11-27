@@ -11,9 +11,11 @@ Europy i 41 strefach cenowych (w tym SE1–4, NO1–5, DK1–2 i 7 stref Włoch)
 | Ekran              | Co pokazuje                                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------------------------ |
 | **Teraz**          | Emisyjność (g CO₂/kWh), udział OZE, aktualny miks, miks w ciągu doby, prognoza emisji, ceny na dziś i jutro  |
+| **Prognoza**       | Ceny i emisyjność na 7 dni („pogoda dla prądu”), najtańsze i najczystsze godziny każdego dnia (PL)           |
 | **Kiedy włączyć?** | Najtańsze albo najczystsze okno dla pralki, zmywarki, suszarki, auta EV, bojlera — z wyliczoną oszczędnością |
 | **Historia**       | Dowolny dzień od 2023 r.: kalendarz emisyjności, miks godzina po godzinie, średnie miesięczne (lato vs zima) |
-| **Źródła**         | Skąd są dane i jakie współczynniki emisji przyjmujemy                                                        |
+| **Taryfy**         | Ile zapłacisz w rok w G11/G12/G12w/G13/taryfie dynamicznej u swojego operatora (PL, stawki 2026)             |
+| **Więcej**         | Źródła i metoda, integracje z Home Assistant i Shelly ([integrations/](integrations/README.md))              |
 
 ## Jak to działa
 

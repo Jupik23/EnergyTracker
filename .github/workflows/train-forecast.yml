@@ -1,0 +1,53 @@
+name: Train forecast
+
+# Weekly: re-fits the 7-day price and CO₂ models on ~3 years of history and the
+# archived weather forecasts, and refreshes the one-year hourly prices used by
+# the tariff comparison:
+#   v1/models/<country>.json, v1/<country>/prices-year.json
+#
+# Published to the separate `models` branch (single force-pushed commit), not
+# to `data`: training takes several minutes and must neither block nor race
+# the 15-minute "Update data" job, which copies these files into `data`.
+on:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: train-forecast
+  cancel-in-progress: false
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # Open-Meteo's free tier counts long multi-variable requests as many calls,
+      # so the job paces itself (~20 s between archive requests).
+      - name: Train
+        run: |
+          mkdir -p models-out
+          npx --yes tsx@4.23.15 --tsconfig packages/pipeline/tsconfig.json \
+            packages/pipeline/src/forecast/train.ts --out models-out
+
+      - name: Publish to models branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd models-out
+          git init --quiet --initial-branch models
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit --quiet -m "models: retrain $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push --quiet --force \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" models

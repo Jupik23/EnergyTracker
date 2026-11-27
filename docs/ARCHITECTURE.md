@@ -74,3 +74,25 @@ Energy-Charts /co2eq           ─► co2Forecast[] (best-effort)
                                                           │
                                        bestWindows() ◄────┘  (planer, liczony na urządzeniu)
 ```
+
+## Prognoza na 7 dni
+
+```
+Energy-Charts (ceny, /co2eq) ─┐
+PSE (RCE, rok wstecz)         ├─► train-forecast.yml (co tydzień) ─► gałąź `models`
+Open-Meteo previous-runs      ┘     v1/models/pl.json, v1/pl/prices-year.json
+                                                │ kopiowane w każdym przebiegu
+Open-Meteo forecast (8 dni) ─► update-data.yml ─┴─► v1/pl/forecast.json (co 3 h), v1/<strefa>/feed.json
+```
+
+- **Model**: regresja grzbietowa (ridge) w czystym TypeScripcie (`packages/pipeline/src/forecast`), jedna dla ceny
+  i jedna dla emisyjności. Cechy: krzywa mocy turbin z prognozy wiatru w 5 punktach, nasłonecznienie i temperatura
+  w 5 miastach, godzina, weekend/święto, sezon oraz „kotwica” — średnia z 7 dni przed wydaniem prognozy (niesie
+  poziom cen gazu i CO₂, którego pogoda nie zna).
+- **Uczciwa ewaluacja**: trening i test używają prognoz pogody wydanych N dni wcześniej (Open-Meteo previous-runs),
+  nie pogody, która faktycznie wystąpiła. Ostatnie 8 tygodni to zbiór testowy; jego błędy dają przedział w aplikacji.
+  Backtest: `npx tsx packages/pipeline/src/forecast/backtest.ts --cache .cache/forecast`.
+- **Wynik** (PL, maj–lis 2026): emisyjność 30–50% dokładniejsza niż „jak tydzień temu”; cena godzinowa tylko
+  nieznacznie, ale wybór najtańszych 3 godzin dnia ~2–3× trafniejszy — i to pokazujemy użytkownikowi.
+- **Osobna gałąź `models`**: trening trwa kilka minut; gdyby pchał na `data`, ścigałby się z jobem co 15 min
+  (force-push jednego commita) albo go blokował.

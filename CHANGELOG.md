@@ -10,6 +10,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), wersjonowanie:
   dowolnego dnia, średnie miesięczne pokazujące różnice między porami roku; link do dnia `?date=2025-05-15`.
 - Archiwum historyczne na gałęzi `history` (miesięczne pliki per kraj, godzinowo) z codzienną aktualizacją
   i ręcznym backfillem.
+- **Prognoza na 7 dni** (zakładka „Prognoza”, na razie Polska): ceny i emisyjność godzina po godzinie z przedziałem
+  niepewności, dzienne podsumowanie „pogoda dla prądu” i najtańsze/najczystsze 3 h każdego dnia. Model regresji
+  (ridge) na prognozach wiatru, słońca i temperatury (Open-Meteo) trenowany co tydzień; trafność pokazana w aplikacji.
+- **Porównanie taryf** (zakładka „Taryfy”): roczny koszt brutto w G11, G12, G12w, G13, G13s, G12sezON, G13active,
+  G12eko i w taryfie dynamicznej dla 5 operatorów (PGE, Tauron, Enea, Energa, Stoen), stawki 2026, profile zużycia
+  i przesuwanie zużycia w tańsze godziny.
+- **Inteligentny dom**: lekki `feed.json` dla każdej strefy, pakiet dla Home Assistant i skrypt dla Shelly Gen2+.
 - 27 krajów i 41 stref cenowych (m.in. SE1–4, NO1–5, DK1–2, 7 stref Włoch) z wyszukiwarką; wybrany obszar jest
   zapamiętywany na urządzeniu.
 - Archiwum dzienne zawiera teraz także ceny.

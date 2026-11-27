@@ -27,9 +27,16 @@ export default function RootLayout() {
           }}
         >
           <Tabs.Screen name="index" options={{ title: 'Teraz', tabBarIcon: icon('⚡') }} />
+          <Tabs.Screen name="forecast" options={{ title: 'Prognoza', tabBarIcon: icon('🌦️') }} />
           <Tabs.Screen name="plan" options={{ title: 'Kiedy włączyć?', tabBarIcon: icon('⏰') }} />
           <Tabs.Screen name="history" options={{ title: 'Historia', tabBarIcon: icon('📅') }} />
-          <Tabs.Screen name="about" options={{ title: 'Źródła', tabBarIcon: icon('ℹ') }} />
+          <Tabs.Screen name="tariffs" options={{ title: 'Taryfy', tabBarIcon: icon('🧾') }} />
+          <Tabs.Screen name="about" options={{ title: 'Więcej', tabBarIcon: icon('ℹ') }} />
+          {/* Reached from "Więcej"; keeps a URL but no tab button. */}
+          <Tabs.Screen
+            name="integrations"
+            options={{ title: 'Inteligentny dom', tabBarItemStyle: { display: 'none' } }}
+          />
         </Tabs>
       </DataProvider>
     </SafeAreaProvider>
