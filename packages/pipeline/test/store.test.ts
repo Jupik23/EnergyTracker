@@ -63,3 +63,13 @@ describe('selectZones', () => {
     expect(() => selectZones('xx')).toThrow();
   });
 });
+
+describe('history month finality', () => {
+  it('re-fetches the current and previous month, keeps older ones', async () => {
+    const { isFinal, previousMonth } = await import('../src/history/run-history');
+    expect(previousMonth('2026-01')).toBe('2025-12');
+    expect(isFinal('2026-11', '2026-11')).toBe(false);
+    expect(isFinal('2026-10', '2026-11')).toBe(false);
+    expect(isFinal('2026-09', '2026-11')).toBe(true);
+  });
+});

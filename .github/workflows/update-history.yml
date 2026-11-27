@@ -1,0 +1,96 @@
+name: Update history
+
+# Builds the historical mix archive on the `history` branch (monthly files per
+# country, hourly resolution). The daily run refreshes the current and the
+# previous month; a manual run with `from` backfills older months. Months that
+# are already complete are skipped, so an interrupted backfill can simply be
+# started again.
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+    inputs:
+      from:
+        description: First month to (re)build, YYYY-MM (empty = previous month)
+        required: false
+        default: ''
+      to:
+        description: Last month, YYYY-MM (empty = current month)
+        required: false
+        default: ''
+      countries:
+        description: Comma-separated country codes (empty = all)
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-history
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    # A full backfill from 2023 is ~2400 rate-limited requests (~3.5 h).
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # Keep the clone's .git: pushing a new commit then only uploads files
+      # that actually changed, not the whole archive.
+      - name: Restore history branch
+        run: |
+          if git clone --quiet --depth 1 --branch history --single-branch \
+               "https://github.com/${GITHUB_REPOSITORY}.git" hist-out; then
+            echo "restored"
+          else
+            mkdir -p hist-out && git -C hist-out init --quiet --initial-branch history
+          fi
+
+      - name: Build and publish, one year at a time
+        env:
+          FROM: ${{ inputs.from }}
+          TO: ${{ inputs.to }}
+          COUNTRIES: ${{ inputs.countries }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          publish() {
+            cp docs/history-branch-README.md hist-out/README.md
+            (
+              cd hist-out
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git checkout --quiet --orphan "next-$1"
+              git add -A
+              git commit --quiet -m "history: update $1 $(date -u +%Y-%m-%dT%H:%MZ)"
+              git push --quiet --force \
+                "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:history
+            )
+          }
+          run() {
+            args=(--out hist-out --from "$1" --to "$2")
+            if [ -n "$COUNTRIES" ]; then args+=(--countries "$COUNTRIES"); fi
+            npx --yes tsx@4.23.15 --tsconfig packages/pipeline/tsconfig.json \
+              packages/pipeline/src/history/run-history.ts "${args[@]}"
+          }
+
+          if [ -z "$FROM" ]; then
+            run "" ""
+            publish daily
+            exit 0
+          fi
+          end="${TO:-$(date -u +%Y-%m)}"
+          for year in $(seq "${FROM:0:4}" "${end:0:4}"); do
+            start="$year-01"; [ "$year" = "${FROM:0:4}" ] && start="$FROM"
+            stop="$year-12"; [ "$year" = "${end:0:4}" ] && stop="$end"
+            echo "::group::$start .. $stop"
+            run "$start" "$stop"
+            publish "$year"
+            echo "::endgroup::"
+          done

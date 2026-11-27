@@ -86,7 +86,7 @@ export interface DataIndex {
   zones: IndexEntry[];
 }
 
-export interface HistoryDay {
+export interface ArchiveDay {
   schemaVersion: typeof SCHEMA_VERSION;
   zone: ZoneId;
   country: string;

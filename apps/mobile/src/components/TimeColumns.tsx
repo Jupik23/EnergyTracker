@@ -26,6 +26,10 @@ interface Props {
   defaultIndex?: number;
   nowMs?: number;
   accessibilityLabel: string;
+  /** Readout/a11y label of a column's time. Default: "dziś 14:00". */
+  timeLabel?: (t: string) => string;
+  /** X-axis tick for a column, or null for none. Default: the hour at 00/06/12/18. */
+  xTick?: (t: string, index: number) => string | null;
 }
 
 const GAP = 2;
@@ -47,6 +51,11 @@ export function TimeColumns({
   defaultIndex,
   nowMs,
   accessibilityLabel,
+  timeLabel = (t) => `${dayLabel(t, timeZone)} ${formatTime(t, timeZone)}`,
+  xTick = (t) => {
+    const hm = formatTime(t, timeZone);
+    return /^(00|06|12|18):00$/.test(hm) ? hm.slice(0, 2) : null;
+  },
 }: Props) {
   const theme = useTheme();
   const [selected, setSelected] = useState<number | null>(null);
@@ -73,17 +82,14 @@ export function TimeColumns({
     return pos;
   }, [nowMs, columns]);
 
-  // Label every 6th hour on the x axis (local time).
   const xLabels = columns
-    .map((c, i) => ({ i, label: formatTime(c.t, timeZone) }))
-    .filter(({ label }) => /^(00|06|12|18):00$/.test(label));
+    .map((c, i) => ({ i, label: xTick(c.t, i) }))
+    .filter((x): x is { i: number; label: string } => x.label !== null);
 
   return (
     <View accessibilityLabel={accessibilityLabel}>
       <Text style={[styles.readout, { color: theme.text }]} numberOfLines={2}>
-        {active
-          ? `${dayLabel(active.t, timeZone)} ${formatTime(active.t, timeZone)} · ${describe(active)}`
-          : ' '}
+        {active ? `${timeLabel(active.t)} · ${describe(active)}` : ' '}
       </Text>
       <View style={{ height }}>
         {ticks.map((v) => (
@@ -109,7 +115,7 @@ export function TimeColumns({
                 onHoverIn={() => setSelected(i)}
                 style={styles.slot}
                 accessibilityRole="button"
-                accessibilityLabel={`${formatTime(c.t, timeZone)}: ${describe(c)}`}
+                accessibilityLabel={`${timeLabel(c.t)}: ${describe(c)}`}
               >
                 <View style={[styles.bar, { opacity: selected == null || isActive ? 1 : 0.55 }]}>
                   {[...visible].reverse().map((s, k) => {
@@ -140,7 +146,7 @@ export function TimeColumns({
             key={columns[i]!.t}
             style={[styles.tick, styles.xTick, { color: theme.textMuted, left: pct(i) }]}
           >
-            {label.slice(0, 2)}
+            {label}
           </Text>
         ))}
       </View>
@@ -172,5 +178,5 @@ const styles = StyleSheet.create({
   },
   bar: { width: '100%', maxWidth: MAX_BAR },
   xAxis: { height: 16, marginTop: 4 },
-  xTick: { position: 'absolute', width: 24 },
+  xTick: { position: 'absolute', width: 36 },
 });

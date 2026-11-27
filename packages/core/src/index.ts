@@ -1,4 +1,5 @@
 export * from './fuels';
+export * from './history';
 export * from './mix';
 export * from './time';
 export * from './types';

@@ -28,6 +28,7 @@ export default function RootLayout() {
         >
           <Tabs.Screen name="index" options={{ title: 'Teraz', tabBarIcon: icon('⚡') }} />
           <Tabs.Screen name="plan" options={{ title: 'Kiedy włączyć?', tabBarIcon: icon('⏰') }} />
+          <Tabs.Screen name="history" options={{ title: 'Historia', tabBarIcon: icon('📅') }} />
           <Tabs.Screen name="about" options={{ title: 'Źródła', tabBarIcon: icon('ℹ') }} />
         </Tabs>
       </DataProvider>
