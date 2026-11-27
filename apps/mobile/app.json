@@ -27,7 +27,16 @@
       "shortName": "Energy",
       "description": "Miks energetyczny, emisje CO₂ i najlepsze godziny na pralkę."
     },
-    "plugins": ["expo-router", "expo-status-bar"],
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Energy Tracker używa lokalizacji tylko na urządzeniu, żeby wybrać Twoją strefę cenową. Współrzędne nie są nigdzie wysyłane."
+        }
+      ]
+    ],
     "scheme": "energytracker"
   }
 }
