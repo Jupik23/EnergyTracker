@@ -1,0 +1,22 @@
+name: Błąd
+description: Coś nie działa jak powinno
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Co się stało?
+      description: Co zrobiłeś(-aś), czego oczekiwałeś(-aś), co zobaczyłeś(-aś).
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platforma
+      options: [Web, Android, iOS, Pipeline danych]
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Zrzuty ekranu / logi

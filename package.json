@@ -1,0 +1,31 @@
+{
+  "name": "energy-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Live electricity mix, CO2 intensity and the best time to run your appliances.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "web": "npm run web --workspace mobile",
+    "start": "npm run start --workspace mobile",
+    "pipeline": "npm run start --workspace @energy/pipeline --",
+    "test": "vitest run",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.7",
+    "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "vitest": "^5.1.2"
+  }
+}

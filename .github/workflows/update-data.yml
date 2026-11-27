@@ -1,0 +1,66 @@
+name: Update data
+
+# Fetches the latest generation mix and prices and publishes static JSON to the
+# `data` branch. The app reads it from raw.githubusercontent.com.
+# GitHub may delay scheduled runs by a few minutes under load; that is fine
+# because upstream data itself is published with a delay.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: Comma-separated country codes (empty = all)
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Restore previous data
+        run: |
+          git clone --quiet --depth 1 --branch data --single-branch \
+            "https://github.com/${GITHUB_REPOSITORY}.git" data-out || mkdir -p data-out
+          rm -rf data-out/.git
+
+      # The pipeline has no runtime dependencies, so skip `npm ci` and run it
+      # straight through tsx (path alias for @energy/core lives in tsconfig.base.json).
+      - name: Run pipeline
+        env:
+          COUNTRIES: ${{ inputs.countries }}
+        run: |
+          args=(--out data-out)
+          if [ -n "$COUNTRIES" ]; then args+=(--countries "$COUNTRIES"); fi
+          npx --yes tsx@4.23.15 --tsconfig packages/pipeline/tsconfig.json \
+            packages/pipeline/src/run.ts "${args[@]}"
+
+      # The data branch is a single orphan commit, force-pushed each run, so
+      # 96 updates a day never bloat the repository history.
+      - name: Publish to data branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp docs/data-branch-README.md data-out/README.md
+          cd data-out
+          git init --quiet --initial-branch data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit --quiet -m "data: update $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push --quiet --force \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data

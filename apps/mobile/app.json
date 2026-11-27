@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Energy Tracker",
+    "slug": "energy-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jupik23.energytracker"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.jupik23.energytracker"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single",
+      "name": "Energy Tracker",
+      "shortName": "Energy",
+      "description": "Miks energetyczny, emisje CO₂ i najlepsze godziny na pralkę."
+    },
+    "plugins": ["expo-router", "expo-status-bar"],
+    "scheme": "energytracker"
+  }
+}
